@@ -2,11 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 
-import '../widgets/stat_card.dart';
-import '../theme.dart';
-import '../models/order_model.dart';
-import 'pos_screen.dart';
-import 'products_screen.dart';
+import 'package:pos_app/widgets/stat_card.dart';
+import 'package:pos_app/theme.dart';
+import 'package:pos_app/models/order_model.dart';
+import 'package:pos_app/screens/pos_screen.dart';
+import 'package:pos_app/screens/products_screen.dart';
+import 'package:pos_app/screens/customers_screen.dart';
+import 'package:pos_app/screens/reports_screen.dart';
+import 'package:pos_app/screens/calendar_screen.dart';
+import 'package:pos_app/screens/settings_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:pos_app/providers/settings_provider.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -24,6 +30,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     {'icon': Icons.inventory_2_rounded, 'title': 'Products'},
     {'icon': Icons.people_alt_rounded, 'title': 'Customers'},
     {'icon': Icons.receipt_long_rounded, 'title': 'Reports'},
+    {'icon': Icons.calendar_month_rounded, 'title': 'Calendar'},
     {'icon': Icons.settings_rounded, 'title': 'Settings'},
   ];
 
@@ -41,7 +48,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               : AppBar(
                   title: const Text('POS System'),
                   elevation: 0,
-                  backgroundColor: Colors.white,
                 ),
           drawer: !isDesktop
               ? Drawer(child: _buildSideMenu(isMobile: true))
@@ -102,12 +108,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   child: const Icon(Icons.storefront, color: Colors.white),
                 ),
                 const SizedBox(width: 12),
-                const Text(
-                  'Super POS',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                Expanded(
+                  child: Text(
+                    context.watch<SettingsProvider>().storeName,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
@@ -180,6 +189,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (_selectedIndex == 2) {
       return const ProductsScreen();
     }
+    if (_selectedIndex == 3) {
+      return const CustomersScreen();
+    }
+    if (_selectedIndex == 4) {
+      return const ReportsScreen();
+    }
+    if (_selectedIndex == 5) {
+      return const CalendarScreen();
+    }
+    if (_selectedIndex == 6) {
+      return const SettingsScreen();
+    }
 
     // Default to Dashboard stats
     return ValueListenableBuilder(
@@ -203,23 +224,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
             })
             .fold(0, (sum, order) => sum + order.total);
 
+        // Advanced Analytics
+        final double avgOrderValue = totalOrders > 0
+            ? (totalRevenue / totalOrders)
+            : 0.0;
+
         // Sort orders chronologically (newest first)
         orders.sort((a, b) => b.date.compareTo(a.date));
         final recentOrders = orders.take(5).toList();
 
         return SingleChildScrollView(
           child: Container(
-            color: AppTheme.backgroundColor,
+            color: Theme.of(context).scaffoldBackgroundColor,
             padding: const EdgeInsets.all(24.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Dashboard Overview',
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: AppTheme.textPrimaryColor,
+                    color: Theme.of(context).textTheme.displayLarge?.color,
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -253,9 +279,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           color: AppTheme.accentColor,
                         ),
                         StatCard(
-                          title: "Low Stock Items",
-                          value: "N/A", // Implement Inventory logic later
-                          icon: Icons.warning_rounded,
+                          title: "Avg Order Value",
+                          value: "PKR ${avgOrderValue.toStringAsFixed(2)}",
+                          icon: Icons.analytics_rounded,
                           color: AppTheme.warningColor,
                         ),
                         StatCard(
@@ -273,7 +299,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
@@ -326,7 +352,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       color: AppTheme.primaryColor,
                                     ),
                                   ),
-                                  title: Text(order.orderId),
+                                  title: Text(
+                                    order.orderId,
+                                    style: TextStyle(
+                                      color: Theme.of(context).textTheme.bodyLarge?.color,
+                                    ),
+                                  ),
                                   subtitle: Text('Cash Sale • $timeFormatted'),
                                   trailing: Text(
                                     'PKR ${order.total.toStringAsFixed(2)}',

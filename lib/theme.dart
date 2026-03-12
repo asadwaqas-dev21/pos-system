@@ -52,4 +52,49 @@ class AppTheme {
       ),
     );
   }
+  static ThemeData get darkTheme {
+    const darkSurface = Color(0xFF1E1E2D);
+    const darkBackground = Color(0xFF151521);
+    const darkTextPrimary = Colors.white;
+
+    return ThemeData(
+      useMaterial3: true,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: primaryColor,
+        brightness: Brightness.dark,
+        surface: darkSurface,
+      ),
+      scaffoldBackgroundColor: darkBackground,
+      textTheme: GoogleFonts.interTextTheme().apply(
+        bodyColor: darkTextPrimary,
+        displayColor: darkTextPrimary,
+      ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: darkSurface,
+        elevation: 0,
+        iconTheme: IconThemeData(color: darkTextPrimary),
+        titleTextStyle: TextStyle(
+          color: darkTextPrimary,
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: primaryColor,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+      ),
+      cardTheme: const CardThemeData(
+        color: darkSurface,
+        elevation: 2,
+        shadowColor: Color(0x33000000),
+      ),
+    );
+  }
 }
